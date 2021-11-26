@@ -7,6 +7,8 @@ load_contrib("pnio")
 load_contrib("pnio_rpc")
 load_contrib("dce_rpc")
 
-scapy_cap = rdpcap('C://Users/sebas//OneDrive//Desktop//pnio_krc4_write_req.pcapng')
+scapy_cap = rdpcap('C://Users/sebas//OneDrive//Desktop//pdu_packet.pcapng')
 for packet in scapy_cap:
-    DceRpc(packet[Raw].load).show2()
+    # ProfinetIO(packet[Raw].load).show2()
+    packet.show()
+    send(packet, iface="Ethernet"

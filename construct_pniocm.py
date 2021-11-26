@@ -9,7 +9,7 @@ load_contrib("dce_rpc")
 load_contrib("pnio_rpc")
 
 
-def get_connect_dcprpc_msg(ip, path_to_gsdml):
+def get_connect_dcprpc_msg(ip, path_to_gsdml, auuid):
     ip_msg = IP(dst=ip)
     udp_msg = UDP(
         sport=49153,
@@ -22,7 +22,6 @@ def get_connect_dcprpc_msg(ip, path_to_gsdml):
         endianness="little",
         encoding="ASCII",
         float="IEEE",
-        object_uuid="dea00000-6c97-11d1-8271-0001beeffeed",
         interface_uuid="dea00001-6c97-11d1-8271-00a02442df7d",
         activity="df16c5b3-2794-11b2-8000-a381734cba00",
     )
@@ -30,7 +29,7 @@ def get_connect_dcprpc_msg(ip, path_to_gsdml):
     gsdml_object = XMLDevice(path_to_gsdml)
 
     ar_block_req = ARBlockReq(
-        ARUUID="de48f48b-2021-11b2-8000-a50f0e4d3b01",
+        ARUUID=auuid,
         SessionKey=2,
         CMInitiatorMacAdd="C0:3E:BA:C9:19:36",
         CMInitiatorObjectUUID="dea00000-6c97-11d1-8271-0001008802cc",
@@ -105,7 +104,7 @@ def get_connect_dcprpc_msg(ip, path_to_gsdml):
         IOCRType=0x2,
         ReductionRatio=512,
         WatchdogFactor=3,
-        DataLength=51,
+        DataLength=40,
         DataHoldFactor=3,
         NumberOfAPIs=1,
         APIs=[
@@ -135,8 +134,9 @@ def get_connect_dcprpc_msg(ip, path_to_gsdml):
         ReductionRatio=512,
         WatchdogFactor=3,
         DataHoldFactor=3,
-        DataLength=51,
+        DataLength=40,
         NumberOfAPIs=1,
+        FrameID=0x8001,
         APIs=[
             IOCRAPI(
                 IODataObjects=[
@@ -285,36 +285,12 @@ def get_connect_dcprpc_msg(ip, path_to_gsdml):
         + expected_submod_req_blocks,
     )
 
-    return ip_msg / udp_msg / dcerpc / pnio_serv_pdu
-
-def get_application_ready_res_msg(ip): 
-    ip_msg = IP(dst=ip)
-    udp_msg = UDP(
-        sport=49153,
-        dport=34964,
-    )
-    dcerpc = DceRpc(
-        type="response",
-        flags1=0x60,
-        flags2=0x0,
-        opnum=4,
-        endianness="little",
-        encoding="ASCII",
-        float="IEEE",
-        object_uuid="dea00000-6c97-11d1-8271-0001beeffeed",
-        interface_uuid="dea00001-6c97-11d1-8271-00a02442df7d",
-        activity="df16c5b3-2794-11b2-8000-a381734cba00",
-    )
-
-    pnio_iod_control_res = IODControlRes(
-        ControlCommand_Done=0x0001, ARUUID="de48f48b-2021-11b2-8000-a50f0e4d3b01"
-    )
-
-    pnio_serv_pdu = PNIOServiceResPDU(blocks=[pnio_iod_control_res])
+    pnio_serv_pdu.max_count = 16696
 
     return ip_msg / udp_msg / dcerpc / pnio_serv_pdu
 
-def get_write_request_msg(ip, path_to_gsdml):
+
+def get_write_request_msg(ip, path_to_gsdml, auuid):
     ip_msg = IP(dst=ip)
     udp_msg = UDP(
         sport=49153,
@@ -329,7 +305,6 @@ def get_write_request_msg(ip, path_to_gsdml):
         float="IEEE",
         # IMPORTANT FOR WRITE REQUEST AND OPERATION OF PNIO CONTEXT MANAGER MESSAGES
         opnum=3,
-        object_uuid="dea00000-6c97-11d1-8271-0001beeffeed",
         interface_uuid="dea00001-6c97-11d1-8271-00a02442df7d",
         activity="df16c5b3-2794-11b2-8000-a381734cba00",
     )
@@ -338,47 +313,90 @@ def get_write_request_msg(ip, path_to_gsdml):
 
     pnio_iod_first_write_req = IODWriteReq(
         seqNum=1,
-        ARUUID="de48f48b-2021-11b2-8000-a50f0e4d3b01",
+        ARUUID=auuid,
         API=0x0,
         slotNumber=0x0,
-        subslotNumber=0x0,
+        subslotNumber=0x8000,
         index=0x8071,
         recordDataLength=12,
     )
 
     pnio_iod_sec_write_req = IODWriteReq(
         seqNum=2,
-        ARUUID="de48f48b-2021-11b2-8000-a50f0e4d3b01",
+        ARUUID=auuid,
         API=0x0,
         slotNumber=0x01,
         subslotNumber=0x01,
-        index=0x0080,
-        recordDataLength=10,
+        index=0x007b,
+        recordDataLength=4,
+    )
+
+    pnio_iod_thi_write_req = IODWriteReq(
+        seqNum=3,
+        ARUUID=auuid,
+        API=0x0,
+        slotNumber=0x01,
+        subslotNumber=0x01,
+        index=0x007c,
+        recordDataLength=4,
     )
 
     pnio_iod_mult_write_req = IODWriteMultipleReq(
-        ARUUID="de48f48b-2021-11b2-8000-a50f0e4d3b01",
+        ARUUID=auuid,
         API=0x00,
         slotNumber=0x0,
         subslotNumber=0x0,
         index=0xE040,
-        recordDataLength=150,
+        recordDataLength=212,
         blocks=[
             pnio_iod_first_write_req
-            / Raw(load="\x02P\x00\x08\x01\x00\x00\x00\x00\x00\x00\x01"),
+            / Raw(load="\x02\x50\x00\x08\x01\x00\x00\x00\x00\x00\x00\x01"),
             pnio_iod_sec_write_req
-            / Raw(load="\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"),
+            / Raw(load="\x00\x00\x00\x01"),
+            pnio_iod_thi_write_req
+            / Raw(load="\x00\x00\x00\x02"),
         ],
     )
 
     pnio_serv_pdu = PNIOServiceReqPDU(args_max=16696, blocks=[pnio_iod_mult_write_req])
 
-    (dcerpc / pnio_serv_pdu).show()
+    pnio_serv_pdu.max_count = 16696
+
+    return ip_msg / udp_msg / dcerpc / pnio_serv_pdu
+
+def get_application_ready_res_msg(ip, auuid, obj_uuid, interface_uuid, activity_uuid): 
+    ip_msg = IP(dst=ip)
+    udp_msg = UDP(
+        sport=49152,
+        dport=49153,
+    )
+    dcerpc = DceRpc(
+        type="response",
+        flags1=0x0a,
+        flags2=0x0,
+        opnum=4,
+        endianness="little",
+        encoding="ASCII",
+        float="IEEE",
+        object_uuid=obj_uuid,
+        interface_uuid=interface_uuid,
+        activity=activity_uuid,
+    )
+
+    pnio_iod_control_res = IODControlRes(
+        block_type=0x8112, SessionKey=2, ControlCommand_Done=0x0001, ARUUID=auuid
+    )
+
+    pnio_serv_pdu = PNIOServiceResPDU(blocks=[pnio_iod_control_res])
+
+    pnio_serv_pdu.max_count = 1340
+
+    pnio_serv_pdu.show()
 
     return ip_msg / udp_msg / dcerpc / pnio_serv_pdu
 
 
-def get_parameter_end_msg(ip):
+def get_parameter_end_msg(ip, auuid):
     ip_msg = IP(dst=ip)
     udp_msg = UDP(
         sport=49153,
@@ -392,13 +410,12 @@ def get_parameter_end_msg(ip):
         endianness="little",
         encoding="ASCII",
         float="IEEE",
-        object_uuid="dea00000-6c97-11d1-8271-0001beeffeed",
         interface_uuid="dea00001-6c97-11d1-8271-00a02442df7d",
         activity="df16c5b3-2794-11b2-8000-a381734cba00",
     )
 
     pnio_iod_control_req = IODControlReq(
-        ControlCommand_PrmEnd=0x0001, ARUUID="de48f48b-2021-11b2-8000-a50f0e4d3b01"
+        ControlCommand_PrmEnd=0x0001, ARUUID=auuid
     )
 
     pnio_serv_pdu = PNIOServiceReqPDU(args_max=16696, blocks=[pnio_iod_control_req])

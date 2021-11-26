@@ -7,13 +7,14 @@ import time
 load_contrib("pnio_dcp")
 load_contrib("pnio")
 
+
 def get_ident_msg(src, name_of_station):
     ether = Ether(dst="01:0e:cf:00:00:00", src=src, type=0x8892)
     pnio_msg = ProfinetIO(frameID=0xFEFE)
     pnio_dcp_ident = ProfinetDCP(
         service_id=0x05,
         service_type=DCP_REQUEST,
-        xid=0xE,
+        xid=0x03,
         reserved=1,
         dcp_data_length=16,
         option=0x02,
@@ -33,7 +34,7 @@ def get_set_ip_msg(src, dst, ip, netmask="255.255.255.0", gateway="0.0.0.0"):
     pnio_dcp_set_ip = ProfinetDCP(
         service_id=0x04,
         service_type=DCP_REQUEST,
-        xid=0xC,
+        xid=0x04,
         reserved=0,
         dcp_data_length=18,
         option=0x01,
