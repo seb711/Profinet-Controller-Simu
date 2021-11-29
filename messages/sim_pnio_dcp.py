@@ -10,19 +10,18 @@ load_contrib("pnio")
 
 def get_ident_msg(src, name_of_station):
     ether = Ether(dst="01:0e:cf:00:00:00", src=src, type=0x8892)
-    pnio_msg = ProfinetIO(frameID=0xFEFE)
+    pnio_msg = ProfinetIO(frameID=DCP_IDENTIFY_REQUEST_FRAME_ID)
     pnio_dcp_ident = ProfinetDCP(
-        service_id=0x05,
+        service_id=DCP_SERVICE_ID_IDENTIFY,
         service_type=DCP_REQUEST,
-        xid=0x03,
+        xid=0x9a,
         reserved=1,
-        dcp_data_length=16,
+        dcp_data_length=len(name_of_station) + (5 if len(name_of_station) % 2 == 1 else 4),
         option=0x02,
         sub_option=0x02,
-        dcp_block_length=11,
-        name_of_station=name_of_station,
+        dcp_block_length=len(name_of_station),
+        name_of_station=name_of_station
     )
-
     return ether / pnio_msg / pnio_dcp_ident
 
 
@@ -47,3 +46,6 @@ def get_set_ip_msg(src, dst, ip, netmask="255.255.255.0", gateway="0.0.0.0"):
     )
 
     return ether / pnio_msg / pnio_dcp_set_ip
+
+
+
