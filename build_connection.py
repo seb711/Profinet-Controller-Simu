@@ -8,8 +8,8 @@ auuid = str(uuid.uuid4())
 
 ident_msg = get_ident_msg(src="c0:3e:ba:c9:19:36", name_of_station="rt-labs-dev")
 set_ip_msg = get_set_ip_msg(src="c0:3e:ba:c9:19:36", dst="00:0c:29:95:78:31", ip="192.168.178.155")
-connect_msg = get_connect_dcprpc_msg(ip="192.168.178.155", path_to_gsdml="./test_project_2.xml", auuid=auuid)
-write_msg = get_write_request_msg(ip="192.168.178.155", path_to_gsdml="./test_project_2.xml", auuid=auuid)
+connect_msg = get_connect_dcprpc_msg(ip="192.168.178.155", path_to_gsdml="./test_project.xml", auuid=auuid)
+write_msg = get_write_request_msg(ip="192.168.178.155", path_to_gsdml="./test_project.xml", auuid=auuid)
 param_end_msg = get_parameter_end_msg(ip="192.168.178.155", auuid=auuid)
 
 srp(ident_msg, iface="Ethernet")

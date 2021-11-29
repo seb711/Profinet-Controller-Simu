@@ -48,7 +48,7 @@ def get_connect_dcprpc_msg(ip, path_to_gsdml, auuid):
     input_api_objects = []
     input_iocs_objects = []
 
-    frame_offset = 3
+    input_frame_offset = 3
 
     for module in usable_modules:
         if module.used_in_slots != "" and module.input_length != 0:
@@ -56,55 +56,55 @@ def get_connect_dcprpc_msg(ip, path_to_gsdml, auuid):
                 IOCRAPIObject(
                     SlotNumber=int(module.used_in_slots),
                     SubslotNumber=int(0x1),
-                    FrameOffset=frame_offset,
+                    FrameOffset=input_frame_offset,
                 ),
             )
             # +1 cause you need an additional iops in payload
-            frame_offset = frame_offset + module.input_length + 1
+            input_frame_offset = input_frame_offset + module.input_length + 1
     for module in usable_modules:
         if module.used_in_slots != "" and module.output_length != 0:
             input_iocs_objects.append(
                 IOCRAPIObject(
                     SlotNumber=int(module.used_in_slots),
                     SubslotNumber=int(0x1),
-                    FrameOffset=frame_offset,
+                    FrameOffset=input_frame_offset,
                 ),
             )
-            frame_offset += 1
+            input_frame_offset += 1
 
     # GET ALL OUTPUT DATA
     output_api_objects = []
     output_iocs_objects = []
 
-    frame_offset = 3
+    output_frame_offset = 3
     for module in usable_modules:
         if module.used_in_slots != "" and module.input_length != 0:
             output_iocs_objects.append(
                 IOCRAPIObject(
                     SlotNumber=int(module.used_in_slots),
                     SubslotNumber=int(0x1),
-                    FrameOffset=frame_offset,
+                    FrameOffset=output_frame_offset,
                 ),
             )
-            frame_offset += 1
+            output_frame_offset += 1
     for module in usable_modules:
         if module.used_in_slots != "" and module.output_length != 0:
             output_api_objects.append(
                 IOCRAPIObject(
                     SlotNumber=int(module.used_in_slots),
                     SubslotNumber=int(0x1),
-                    FrameOffset=frame_offset,
+                    FrameOffset=output_frame_offset,
                 ),
             )
             # +1 cause you need an additional iops in payload
-            frame_offset = frame_offset + module.output_length + 1
+            output_frame_offset = output_frame_offset + module.output_length + 1
 
     output_cr = IOCRBlockReq(
         IOCRProperties_RTClass=0x2,
         IOCRType=0x2,
         ReductionRatio=512,
         WatchdogFactor=3,
-        DataLength=40,
+        DataLength=output_frame_offset if output_frame_offset > 40 else 40,
         DataHoldFactor=3,
         NumberOfAPIs=1,
         APIs=[
@@ -134,7 +134,7 @@ def get_connect_dcprpc_msg(ip, path_to_gsdml, auuid):
         ReductionRatio=512,
         WatchdogFactor=3,
         DataHoldFactor=3,
-        DataLength=40,
+        DataLength=input_frame_offset if input_frame_offset > 40 else 40,
         NumberOfAPIs=1,
         FrameID=0x8001,
         APIs=[
@@ -327,7 +327,7 @@ def get_write_request_msg(ip, path_to_gsdml, auuid):
         API=0x0,
         slotNumber=0x01,
         subslotNumber=0x01,
-        index=0x007b,
+        index=0x007B,
         recordDataLength=4,
     )
 
@@ -337,7 +337,7 @@ def get_write_request_msg(ip, path_to_gsdml, auuid):
         API=0x0,
         slotNumber=0x01,
         subslotNumber=0x01,
-        index=0x007c,
+        index=0x007C,
         recordDataLength=4,
     )
 
@@ -351,10 +351,8 @@ def get_write_request_msg(ip, path_to_gsdml, auuid):
         blocks=[
             pnio_iod_first_write_req
             / Raw(load="\x02\x50\x00\x08\x01\x00\x00\x00\x00\x00\x00\x01"),
-            pnio_iod_sec_write_req
-            / Raw(load="\x00\x00\x00\x01"),
-            pnio_iod_thi_write_req
-            / Raw(load="\x00\x00\x00\x02"),
+            pnio_iod_sec_write_req / Raw(load="\x00\x00\x00\x01"),
+            pnio_iod_thi_write_req / Raw(load="\x00\x00\x00\x02"),
         ],
     )
 
@@ -364,7 +362,8 @@ def get_write_request_msg(ip, path_to_gsdml, auuid):
 
     return ip_msg / udp_msg / dcerpc / pnio_serv_pdu
 
-def get_application_ready_res_msg(ip, auuid, obj_uuid, interface_uuid, activity_uuid): 
+
+def get_application_ready_res_msg(ip, auuid, obj_uuid, interface_uuid, activity_uuid):
     ip_msg = IP(dst=ip)
     udp_msg = UDP(
         sport=49152,
@@ -372,7 +371,7 @@ def get_application_ready_res_msg(ip, auuid, obj_uuid, interface_uuid, activity_
     )
     dcerpc = DceRpc(
         type="response",
-        flags1=0x0a,
+        flags1=0x0A,
         flags2=0x0,
         opnum=4,
         endianness="little",
@@ -414,9 +413,7 @@ def get_parameter_end_msg(ip, auuid):
         activity="df16c5b3-2794-11b2-8000-a381734cba00",
     )
 
-    pnio_iod_control_req = IODControlReq(
-        ControlCommand_PrmEnd=0x0001, ARUUID=auuid
-    )
+    pnio_iod_control_req = IODControlReq(ControlCommand_PrmEnd=0x0001, ARUUID=auuid)
 
     pnio_serv_pdu = PNIOServiceReqPDU(args_max=16696, blocks=[pnio_iod_control_req])
 
