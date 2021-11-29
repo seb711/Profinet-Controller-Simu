@@ -1,9 +1,7 @@
 from xml.dom.minidom import parse, Node
 
-BYTE_SIZE = {
-    'Unsigned8': 1, 
-    'F_MessageTrailer4Byte': 4
-}
+BYTE_SIZE = {"Unsigned8": 1, "F_MessageTrailer4Byte": 4}
+
 
 class XMLIsoReference:
     def __init__(self, iso_ref_object):
@@ -214,10 +212,24 @@ class XMLModuleItem:
                 "TextId"
             ),
         )
-        self.submododule_id =xml_submodule.getAttribute("ID")
-        self.submodule_ident_number = int(xml_submodule.getAttribute("SubmoduleIdentNumber"), 16)
-        self.input_length = 0 if len(xml_submodule_input) == 0 else self.add_size_io_data(xml_submodule_input[0].getElementsByTagName("DataItem"))
-        self.output_length = 0 if len(xml_submodule_output) == 0 else self.add_size_io_data(xml_submodule_output[0].getElementsByTagName("DataItem"))
+        self.submododule_id = xml_submodule.getAttribute("ID")
+        self.submodule_ident_number = int(
+            xml_submodule.getAttribute("SubmoduleIdentNumber"), 16
+        )
+        self.input_length = (
+            0
+            if len(xml_submodule_input) == 0
+            else self.add_size_io_data(
+                xml_submodule_input[0].getElementsByTagName("DataItem")
+            )
+        )
+        self.output_length = (
+            0
+            if len(xml_submodule_output) == 0
+            else self.add_size_io_data(
+                xml_submodule_output[0].getElementsByTagName("DataItem")
+            )
+        )
         self.input_id = (
             ""
             if len(xml_submodule_input) == 0
@@ -254,14 +266,36 @@ class XMLModuleItem:
         )
         self.allowed_in_slots = item_ref.getAttribute("AllowedInSlots")
         self.used_in_slots = item_ref.getAttribute("UsedInSlots")
+        self.parameters = self.calc_parameter_items(xml_submodule)
+
+    def calc_parameter_items(self, submodule):
+        record_data_list = submodule.getElementsByTagName("RecordDataList")
+        if len(record_data_list) > 0:
+            parameter_list = record_data_list[0].getElementsByTagName(
+                "ParameterRecordDataItem"
+            )
+            return [XMLParameterRecordDataItem(element) for element in parameter_list]
+        else:
+            return []
 
     def add_size_io_data(self, data_items):
         item_size = 0
-        for i in data_items: 
+        for i in data_items:
             item_size += BYTE_SIZE[i.getAttribute("DataType")]
         return item_size
-    
 
+
+class XMLParameterRecordDataItem:
+    def __init__(self, parameter_element):
+        ref_item = parameter_element.getElementsByTagName("Ref")[0]
+        self.index = int(parameter_element.getAttribute("Index"))
+        # Length in Byte
+        self.length = int(parameter_element.getAttribute("Length"))
+        self.default = int(ref_item.getAttribute("DefaultValue"))
+        self.min_value, self.max_value = [
+            int(x) for x in ref_item.getAttribute("AllowedValues").split("..")
+        ]
+        self.data_type = ref_item.getAttribute("Unsigned32")
 
 class XMLInterfaceSubmoduleItem:
     def __init__(self, submodule_element):
@@ -270,7 +304,9 @@ class XMLInterfaceSubmoduleItem:
         )[0].getElementsByTagName("TimingProperties")[0]
         self.id = submodule_element.getAttribute("ID")
         self.subslot_number = submodule_element.getAttribute("SubslotNumber")
-        self.subslot_ident_number = int(submodule_element.getAttribute("SubmoduleIdentNumber"), 16)      
+        self.subslot_ident_number = int(
+            submodule_element.getAttribute("SubmoduleIdentNumber"), 16
+        )
         self.supported_rt_classes = submodule_element.getAttribute(
             "SupportedRT_Classes"
         )
@@ -283,7 +319,9 @@ class XMLPortSubmoduleItem:
         mau_type_list = submodule_element.getElementsByTagName("MAUTypeList")[0]
         self.id = submodule_element.getAttribute("ID")
         self.subslot_number = submodule_element.getAttribute("SubslotNumber")
-        self.subslot_ident_number = int(submodule_element.getAttribute("SubmoduleIdentNumber"), 16)
+        self.subslot_ident_number = int(
+            submodule_element.getAttribute("SubmoduleIdentNumber"), 16
+        )
         self.mau_type_list = [
             item.getAttribute("Value")
             for item in mau_type_list.getElementsByTagName("MAUTypeItem")
@@ -340,8 +378,7 @@ class XMLDevice:
 
 
 def main():
-    device = XMLDevice("./test_project_2.xml")
-
+    device = XMLDevice("./gsdml/test_project_2.xml")
 
 if __name__ == "__main__":
     main()

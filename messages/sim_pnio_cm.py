@@ -308,10 +308,11 @@ def get_write_request_msg(ip, path_to_gsdml, auuid):
         activity="df16c5b3-2794-11b2-8000-a381734cba00",
     )
 
-    gsdml_object = XMLDevice(path_to_gsdml)
+    gsdmlObject = XMLDevice(path_to_gsdml)
+    seqNum = 1
 
     pnio_iod_first_write_req = IODWriteReq(
-        seqNum=1,
+        seqNum=seqNum,
         ARUUID=auuid,
         API=0x0,
         slotNumber=0x0,
@@ -319,26 +320,45 @@ def get_write_request_msg(ip, path_to_gsdml, auuid):
         index=0x8071,
         recordDataLength=12,
     )
+    seqNum += 1
 
-    pnio_iod_sec_write_req = IODWriteReq(
-        seqNum=2,
-        ARUUID=auuid,
-        API=0x0,
-        slotNumber=0x01,
-        subslotNumber=0x01,
-        index=0x007B,
-        recordDataLength=4,
-    )
+    parameter_entrys = []
 
-    pnio_iod_thi_write_req = IODWriteReq(
-        seqNum=3,
-        ARUUID=auuid,
-        API=0x0,
-        slotNumber=0x01,
-        subslotNumber=0x01,
-        index=0x007C,
-        recordDataLength=4,
-    )
+    for module in gsdmlObject.body.dap_list[0].usable_modules:
+        if module.used_in_slots != "" and module.parameters != []:
+            for parameter in module.parameters:
+                parameter_entrys.append(
+                    IODWriteReq(
+                        seqNum=seqNum,
+                        ARUUID=auuid,
+                        API=0x0,
+                        slotNumber=int(module.used_in_slots),
+                        subslotNumber=0x01,
+                        index=parameter.index,
+                        recordDataLength=parameter.length,
+                    ) / Raw(load="".join([chr(counter & 0xff) for counter in range(parameter.length)]))
+                ) 
+                seqNum += 1
+
+    # pnio_iod_sec_write_req = IODWriteReq(
+    #     seqNum=2,
+    #     ARUUID=auuid,
+    #     API=0x0,
+    #     slotNumber=0x01,
+    #     subslotNumber=0x01,
+    #     index=0x007B,
+    #     recordDataLength=4,
+    # )
+
+    # pnio_iod_thi_write_req = IODWriteReq(
+    #     seqNum=3,
+    #     ARUUID=auuid,
+    #     API=0x0,
+    #     slotNumber=0x01,
+    #     subslotNumber=0x01,
+    #     index=0x007C,
+    #     recordDataLength=4,
+    # )
 
     pnio_iod_mult_write_req = IODWriteMultipleReq(
         ARUUID=auuid,
@@ -350,9 +370,7 @@ def get_write_request_msg(ip, path_to_gsdml, auuid):
         blocks=[
             pnio_iod_first_write_req
             / Raw(load="\x02\x50\x00\x08\x01\x00\x00\x00\x00\x00\x00\x01"),
-            pnio_iod_sec_write_req / Raw(load="\x00\x00\x00\x01"),
-            pnio_iod_thi_write_req / Raw(load="\x00\x00\x00\x02"),
-        ],
+        ] + parameter_entrys,
     )
 
     pnio_serv_pdu = PNIOServiceReqPDU(args_max=16696, blocks=[pnio_iod_mult_write_req])

@@ -22,13 +22,11 @@ if mac_address_device == mac_src or len(ans) < 2:
     print("ABORT")
 
 # SET IP OF DEVICE
-# time.sleep(0.5)  # Time Sleep for Wireshark Detection (TODO Test minimum wait time)
 set_ip_msg = get_set_ip_msg(
     src=mac_src, dst=mac_address_device, ip=device_ip
 )
 set_ip_msg.show()
 ip_msg_rsp = srp1(set_ip_msg, iface=iface)
-# time.sleep(0.5) 
 
 # EXCHANGE CONFIGURATION OF DEVICE
 time.sleep(2)
