@@ -3,7 +3,7 @@ from scapy.contrib.dce_rpc import *
 from scapy.contrib.pnio_rpc import *
 from scapy.contrib.dce_rpc import *
 
-from xmlparser import XMLDevice
+from helper.gsdml_parser import XMLDevice
 
 load_contrib("dce_rpc")
 load_contrib("pnio_rpc")
@@ -249,7 +249,6 @@ def get_connect_dcprpc_msg(ip, path_to_gsdml, auuid):
                     ),
                 ]
 
-            print(module.used_in_slots)
             expected_submod_req_blocks.append(
                 ExpectedSubmoduleBlockReq(
                     NumberOfAPIs=1,

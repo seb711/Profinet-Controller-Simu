@@ -1,2 +1,5 @@
 __init__.py
 __pycache__/*
+helper/__pycache__/*
+messages/__pycache__/*
+assets/__pycache__/*

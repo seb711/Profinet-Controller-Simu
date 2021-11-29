@@ -1,7 +1,7 @@
 from scapy.all import *
 from scapy.contrib.pnio import *
 
-from xmlparser import XMLDevice
+from helper.gsdml_parser import XMLDevice
 
 load_contrib("pnio")
 
@@ -30,8 +30,6 @@ def get_data_msg(dst, src, counter):
     fifth_iocs = PNIORealTime_IOxS(
         dataState=0x1, instance=0x0, reserved=0x0, extension=0x0
     )
-
-    print(chr(counter & 0xff))
 
     pdu = PNIORealTimeCyclicPDU(
         cycleCounter=16384 * (counter % 4),
