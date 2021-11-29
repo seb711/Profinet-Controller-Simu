@@ -340,26 +340,6 @@ def get_write_request_msg(ip, path_to_gsdml, auuid):
                 ) 
                 seqNum += 1
 
-    # pnio_iod_sec_write_req = IODWriteReq(
-    #     seqNum=2,
-    #     ARUUID=auuid,
-    #     API=0x0,
-    #     slotNumber=0x01,
-    #     subslotNumber=0x01,
-    #     index=0x007B,
-    #     recordDataLength=4,
-    # )
-
-    # pnio_iod_thi_write_req = IODWriteReq(
-    #     seqNum=3,
-    #     ARUUID=auuid,
-    #     API=0x0,
-    #     slotNumber=0x01,
-    #     subslotNumber=0x01,
-    #     index=0x007C,
-    #     recordDataLength=4,
-    # )
-
     pnio_iod_mult_write_req = IODWriteMultipleReq(
         ARUUID=auuid,
         API=0x00,
