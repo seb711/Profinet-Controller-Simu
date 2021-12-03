@@ -1,0 +1,43 @@
+<div id="load" class="load">
+  <h3>Connection State: {{connection_state}}</h3>
+  <h4>IOPS States</h4>
+  <table class="table">
+    <tr>
+      <th scope="col">Slot</th>
+      <th scope="col">Value</th>
+    </tr>
+    {% for result in message_state.iops %}
+    <tr>
+      <th scope="row">0x8000</th>
+      <td>{{result["data_state"]}}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <h4>IOCS States</h4>
+  <table class="table">
+    <tr>
+      <th scope="col">Slot</th>
+      <th scope="col">Value</th>
+    </tr>
+    {% for result in message_state.iocs %}
+    <tr>
+      <th scope="row">0x8000</th>
+      <td>{{result["data_state"]}}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% for result in message_state.data %}
+  <table class="table">
+    <tr>
+      <th scope="col">Unsigned8</th>
+      <th scope="col">Value</th>
+    </tr>
+    {% for data_value in result %}
+    <tr>
+      <th scope="row">{{loop.index}}</th>
+      <td>{{data_value}}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% endfor %}
+</div>

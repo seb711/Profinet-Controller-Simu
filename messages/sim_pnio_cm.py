@@ -3,13 +3,11 @@ from scapy.contrib.dce_rpc import *
 from scapy.contrib.pnio_rpc import *
 from scapy.contrib.dce_rpc import *
 
-from helper.gsdml_parser import XMLDevice
-
 load_contrib("dce_rpc")
 load_contrib("pnio_rpc")
 
 
-def get_connect_dcprpc_msg(ip, path_to_gsdml, auuid):
+def get_connect_dcprpc_msg(ip, device, auuid):
     ip_msg = IP(dst=ip)
     udp_msg = UDP(
         sport=49153,
@@ -26,8 +24,6 @@ def get_connect_dcprpc_msg(ip, path_to_gsdml, auuid):
         activity="df16c5b3-2794-11b2-8000-a381734cba00",
     )
 
-    gsdml_object = XMLDevice(path_to_gsdml)
-
     ar_block_req = ARBlockReq(
         ARUUID=auuid,
         SessionKey=2,
@@ -40,11 +36,11 @@ def get_connect_dcprpc_msg(ip, path_to_gsdml, auuid):
     )
     alarm_block_req = AlarmCRBlockReq(block_type=0x0103, block_length=22)
 
-    submodule_interface = gsdml_object.body.dap_list[0].interface_submodule_item
-    submodule_port = gsdml_object.body.dap_list[0].port_submodule_item
+    submodule_interface = device.body.dap_list[0].interface_submodule_item
+    submodule_port = device.body.dap_list[0].port_submodule_item
 
     # GET ALL INPUT DATA
-    usable_modules = gsdml_object.body.dap_list[0].usable_modules
+    usable_modules = device.body.dap_list[0].usable_modules
     input_api_objects = []
     input_iocs_objects = []
 
@@ -289,7 +285,7 @@ def get_connect_dcprpc_msg(ip, path_to_gsdml, auuid):
     return ip_msg / udp_msg / dcerpc / pnio_serv_pdu
 
 
-def get_write_request_msg(ip, path_to_gsdml, auuid):
+def get_write_request_msg(ip, device, auuid):
     ip_msg = IP(dst=ip)
     udp_msg = UDP(
         sport=49153,
@@ -308,7 +304,6 @@ def get_write_request_msg(ip, path_to_gsdml, auuid):
         activity="df16c5b3-2794-11b2-8000-a381734cba00",
     )
 
-    gsdmlObject = XMLDevice(path_to_gsdml)
     seqNum = 1
 
     pnio_iod_first_write_req = IODWriteReq(
@@ -324,7 +319,7 @@ def get_write_request_msg(ip, path_to_gsdml, auuid):
 
     parameter_entrys = []
 
-    for module in gsdmlObject.body.dap_list[0].usable_modules:
+    for module in device.body.dap_list[0].usable_modules:
         if module.used_in_slots != "" and module.parameters != []:
             for parameter in module.parameters:
                 parameter_entrys.append(
@@ -436,3 +431,11 @@ def get_ping_msg(ip):
     )
 
     return ip_msg / udp_msg / dcerpc
+
+
+def main():
+    get_ping_msg("192.168.178.155")
+
+
+if __name__ == "__main__":
+    main()

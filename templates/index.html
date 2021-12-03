@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>PNIO Controller Simulation</h1>
+<p>Input here all Parameters that are necessary to build a connection!</p>
+<form action = "http://localhost:5000/build" method = "POST">
+    <p>Device Name <input type = "text" name = "Name" /></p>
+    <p>Device IP <input type = "text" name = "IP" /></p>
+    <p>Interface <input type = "text" name = "IFace" /></p>
+    <p>Path to GSDML <input type ="text" name = "Path" /></p>
+    <p><input type = "submit" value = "Build Connection" /></p>
+ </form>
+ <p>Go back to the <a href="/page2">home page</a>.</p>
+
+{% endblock %}
