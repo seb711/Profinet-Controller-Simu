@@ -1,0 +1,65 @@
+<h4>Data</h4>
+{% for result in output_data %}
+<table class="table table-bordered table-sm">
+  <tr>
+    <th scope="col">Unsigned8</th>
+    <th scope="col">Value</th>
+  </tr>
+  {% for data_value in range(result.data_length) %}
+  <tr>
+    <th scope="row">{{loop.index}}</th>
+    <td>
+      <input
+        type="number"
+        min="0"
+        max="255"
+        class="{{result.module.module_ident_number}}_{{ result.module.submodule_ident_number}}"
+        id="{{result.module.module_ident_number}}_{{ result.module.submodule_ident_number}}_{{loop.index}}"
+        value="0"
+      />
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+<button
+  type="button"
+  onclick="sendNewValues({{result.module.module_ident_number}}, {{ result.module.submodule_ident_number}})"
+  class="btn btn-primary"
+>
+  Submit
+</button>
+{% endfor %}
+
+<script>
+  function sendNewValues(module_ident, submodule_ident) {
+    var all = $('.' + module_ident + '_' + submodule_ident)
+      .map(function () {
+        return {
+          value: parseInt(this.value),
+          index: parseInt(this.id.split('_').at(-1)),
+        }
+      })
+      .get()
+
+    all = all.sort(function compareFn(firstEl, secondEl) {
+      return firstEl.index - secondEl.index
+    })
+
+    all = all.map((ele) => {
+      return ele.value
+    })
+
+    $.post({
+      url: '/sendValues',
+      contentType: 'application/json;charset=UTF-8',
+      data: JSON.stringify({
+        module_ident: module_ident,
+        submodule_ident: submodule_ident,
+        values: all,
+      }),
+      success: function (data, status) {
+        alert('Data: ' + data + '\nStatus: ' + status)
+      },
+    })
+  }
+</script>

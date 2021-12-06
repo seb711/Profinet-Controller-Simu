@@ -26,6 +26,7 @@ class PNIOConnection:
         self.device = XMLDevice(path_to_gsdml)
         self.input_data = ""
         self.message_data = PNIOPSMessage()
+        self.output_data = []
 
     def sniff_for_answers(self):
         def update_load(pkt):
@@ -49,9 +50,9 @@ class PNIOConnection:
                 dst=self.mac_address_device,
                 counter=counter,
                 device=self.device,
+                data=self.output_data
             )
             ans, _ = srp(ps_msg, iface="Ethernet", verbose=False)
-            # ans[-1].answer.show()
             counter += 1
             time.sleep(1)
 

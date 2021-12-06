@@ -381,9 +381,7 @@ def get_application_ready_res_msg(ip, auuid, obj_uuid, interface_uuid, activity_
     pnio_serv_pdu = PNIOServiceResPDU(blocks=[pnio_iod_control_res])
 
     pnio_serv_pdu.max_count = 1340
-
-    pnio_serv_pdu.show()
-
+    
     return ip_msg / udp_msg / dcerpc / pnio_serv_pdu
 
 

@@ -1,43 +1,94 @@
 <div id="load" class="load">
   <h3>Connection State: {{connection_state}}</h3>
+  <hr />
+  <h4>Message Information</h4>
+  <hr />
+  <table class="table">
+    <tr>
+      <th scope="col">Cycle Counter</th>
+      <th scope="col">Ignore</th>
+      <th scope="col">Reserved 2</th>
+      <th scope="col">Station Problem Indicator</th>
+      <th scope="col">Provider State</th>
+      <th scope="col">Reserved 1</th>
+      <th scope="col">Data Valid</th>
+      <th scope="col">Redundancy</th>
+      <th scope="col">State</th>
+    </tr>
+    <tr>
+      <td>{{message_counter}}</td>
+      <td>{{message_info.ignore}}</td>
+      <td>{{message_info.reserved_2}}</td>
+      <td>{{message_info.station_problem_indicator}}</td>
+      <td>{{message_info.provider_state}}</td>
+      <td>{{message_info.reserved_1}}</td>
+      <td>{{message_info.data_valid}}</td>
+      <td>{{message_info.redundancy}}</td>
+      <td>{{message_info.state}}</td>
+    </tr>
+  </table>
   <h4>IOPS States</h4>
   <table class="table">
     <tr>
-      <th scope="col">Slot</th>
-      <th scope="col">Value</th>
+      <th scope="col">Module</th>
+      <th scope="col">Submodule</th>
+      <th scope="col">Data State</th>
+      <th scope="col">Instance</th>
+      <th scope="col">Reserved</th>
+      <th scope="col">Extension</th>
     </tr>
-    {% for result in message_state.iops %}
+    {% for result in message_data.iocs %}
     <tr>
-      <th scope="row">0x8000</th>
+      <th scope="row">{{result["module"]}}</th>
+      <th scope="row">{{result["submodule"]}}</th>
       <td>{{result["data_state"]}}</td>
+      <td>{{result["instance"]}}</td>
+      <td>{{result["reserved"]}}</td>
+      <td>{{result["extension"]}}</td>
     </tr>
     {% endfor %}
   </table>
   <h4>IOCS States</h4>
   <table class="table">
     <tr>
-      <th scope="col">Slot</th>
-      <th scope="col">Value</th>
+      <th scope="col">Module</th>
+      <th scope="col">Submodule</th>
+      <th scope="col">Data State</th>
+      <th scope="col">Instance</th>
+      <th scope="col">Reserved</th>
+      <th scope="col">Extension</th>
     </tr>
-    {% for result in message_state.iocs %}
+    {% for result in message_data.iops %}
     <tr>
-      <th scope="row">0x8000</th>
+      <th scope="row">{{result["module"]}}</th>
+      <th scope="row">{{result["submodule"]}}</th>
       <td>{{result["data_state"]}}</td>
+      <td>{{result["instance"]}}</td>
+      <td>{{result["reserved"]}}</td>
+      <td>{{result["extension"]}}</td>
     </tr>
     {% endfor %}
   </table>
-  {% for result in message_state.data %}
-  <table class="table">
-    <tr>
-      <th scope="col">Unsigned8</th>
-      <th scope="col">Value</th>
-    </tr>
-    {% for data_value in result %}
-    <tr>
-      <th scope="row">{{loop.index}}</th>
-      <td>{{data_value}}</td>
-    </tr>
-    {% endfor %}
-  </table>
-  {% endfor %}
+  <div class="data-container">
+    <div class="grid-item">
+      <h4>Data</h4>
+      {% for result in message_data.data %}
+      <table class="table table-bordered table-sm">
+        <tr>
+          <th scope="col">Unsigned8</th>
+          <th scope="col">Value</th>
+        </tr>
+        {% for data_value in result %}
+        <tr>
+          <th scope="row">{{loop.index}}</th>
+          <td>{{data_value}}</td>
+        </tr>
+        {% endfor %}
+      </table>
+      {% endfor %}
+    </div>
+    <div class="grid-item">
+      
+    </div>
+  </div>
 </div>
